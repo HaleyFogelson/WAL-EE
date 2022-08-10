@@ -5,7 +5,6 @@ from time import sleep
 import struct
 import sys
 from itertools import repeat
-import serial.tools.list_ports
 
 
 '''
@@ -16,7 +15,6 @@ was fairly conservative to begin with) was increased to a relatively safe number
 sys.setrecursionlimit(5000)
 
 
-arduinoPort = serial.tools.list_ports.comports()
 
 #GLOBAL VARIABLE DECLARATIONS
 global imgSizeX
@@ -25,7 +23,7 @@ global imgSizeY
 
 #IMAGE PROCESSING
 #resize image such that it fits within number of motor steps
-im_original = cv2.imread('img.jpeg')
+im_original = cv2.imread('img.jpg')
 imgSizeY, imgSizeX = im_original.shape[:2]
 
 if (imgSizeX > imgSizeY):
@@ -102,7 +100,7 @@ wentTo = [[0 for xcoord in range (imgSizeX)] for k in range (imgSizeY)]
 
 
 
-ser = serial.Serial(str(arduinoPort[0])[0:12], 9600, timeout=3)
+#ser = serial.Serial(str(arduinoPort[0])[0:12], 9600, timeout=3)
 
 
 
@@ -169,7 +167,7 @@ def checkIfBlack(newXCoord, newYCoord):
       if (imgOutlined[newXCoord][newYCoord] == 0):
         coordsX = np.append(coordsX, newXCoord)
         coordsY = np.append(coordsY, newYCoord)
-        print >> outputFile, newXCoord, newYCoord
+        print ( outputFile, newXCoord, newYCoord)
         #coordsCount+=1
         wentTo[newXCoord][newYCoord] = 1
         checkAroundCurrentPoint(newXCoord, newYCoord)
@@ -194,7 +192,7 @@ for xcoord in range(imgOutlined.shape[0]):
         if (wentTo[xcoord][ycoord] == 0):
           coordsX = np.append(coordsX, xcoord)
           coordsY = np.append(coordsY, ycoord)                
-          print >> outputFile, xcoord, ycoord
+          print (outputFile, xcoord, ycoord)
           coordsCount+=1
           wentTo[xcoord][ycoord] = 1
           checkAroundCurrentPoint(xcoord,ycoord)
@@ -215,9 +213,9 @@ sleep(3)
 print("sending in numElements")
 print(str(numElements))
 
-ser.write(str(numElements))
-ser.write("\n")
-ser.flush()
+#ser.write(str(numElements))
+#ser.write("\n")
+#ser.flush()
 
 
 print ("done")
