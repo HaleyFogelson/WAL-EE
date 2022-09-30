@@ -5,6 +5,7 @@ from time import sleep
 import struct
 import sys
 from itertools import repeat
+import csv
 
 
 '''
@@ -21,9 +22,9 @@ global imgSizeX
 global imgSizeY
 
 
-#IMAGE PROCESSING
-#resize image such that it fits within number of motor steps
-im_original = cv2.imread('img.jpg')
+#PROCESSING IMAGE
+#resize image (IN FUTURE THIS WOULD BE SIZE OF THE WALL)
+im_original = cv2.imread('img2.jpg')
 imgSizeY, imgSizeX = im_original.shape[:2]
 
 if (imgSizeX > imgSizeY):
@@ -36,28 +37,23 @@ cv2.imwrite('img_resize.jpeg', imgResized)
 
 imgSizeY, imgSizeX = imgResized.shape[:2]
 
-#adds border to prevent loss of relevant pixels on edges
-'''
-borderSize = 3
-imgResized = cv2.copyMakeBorder(imgResized, top=borderSize, bottom=borderSize, left=borderSize, right=borderSize, borderType= cv2.BORDER_CONSTANT, value=[0,0,0])
 
-imgSizeY, imgSizeX = imgResized.shape[:2]
-'''
-
-#loading images, cvtColor converts to grayscale, interpolation choices based on OpenCV documentation
+#loading images 
 imgColour = imgResized
+#cvtColor converts to grayscale
 imgGrayscale = cv2.cvtColor(imgColour, cv2.COLOR_BGR2GRAY)
+#interpolation choices based on OpenCV documentation
 (thresh, imgBlackWhite) = cv2.threshold(imgGrayscale, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 thresh = 127
 imgBlackWhite = cv2.threshold(imgGrayscale, thresh, 255, cv2.THRESH_BINARY)[1]
 cv2.imwrite('img_bw.jpeg',imgBlackWhite)
 
 
-#edge detection
-imgBlurredColour = cv2.GaussianBlur(imgColour, (7,7),0) #blurs to soften edges, really sure how effetive this is yet
+#detects the edges
+imgBlurredColour = cv2.GaussianBlur(imgColour, (7,7),0) 
 imgBlurredBlackWhite = cv2.GaussianBlur(imgBlackWhite, (7,7),0)
 
-imgOutlinedColour = cv2.Canny(imgBlurredColour, 100, 200) #for colour 
+imgOutlinedColour = cv2.Canny(imgBlurredColour, 100, 200) 
 #processes and outputs an image, 100 200 is the ratio for acceptable edge gradation 
 imgOutlinedBlackWhite = cv2.Canny(imgBlurredBlackWhite, 100, 200) #for black and white
 imgOutlinedGrayscale = cv2.Canny(imgGrayscale, 100, 200)
@@ -71,8 +67,6 @@ imgOutlined = cv2.addWeighted(imgOutlinedTemp,1,imgOutlinedGrayscale,1,0)#merges
 imgOutlined = cv2.bitwise_not(imgOutlined)
 cv2.imwrite('img_outline.jpeg',imgOutlined)
 print("done converting")
-#cv2.imshow("window with bord", imgOutlined)
-#cv2.waitKey(0)
 
 
 
@@ -168,6 +162,9 @@ def checkIfBlack(newXCoord, newYCoord):
         coordsX = np.append(coordsX, newXCoord)
         coordsY = np.append(coordsY, newYCoord)
         print ( outputFile, newXCoord, newYCoord)
+        with open('./cvs_file','a', encoding='UTF8') as f:
+          writer = csv.writer(f)
+          writer.writerow([str(newXCoord)] + [str(newYCoord)])
         #coordsCount+=1
         wentTo[newXCoord][newYCoord] = 1
         checkAroundCurrentPoint(newXCoord, newYCoord)
