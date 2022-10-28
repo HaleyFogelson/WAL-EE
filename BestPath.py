@@ -7,15 +7,20 @@
 import csv
 import RPi.GPIO as GPIO
 from time import sleep
+import board
+import digitalio as d
 
 # Pins for Motor Driver Inputs 
 Motor1A = 22
 Motor1B = 27
 Motor1E = 17
 
-Motor2A = 4;
-Motor2B = 23;
-Motor2C = 25;
+Motor2A = 4
+Motor2B = 23
+Motor2C = 25
+
+EncoderA = 15
+EncoderB = 18
 
 #STEPSPERREV = 20
 #servoPin = 6
@@ -48,6 +53,8 @@ def setup():
   GPIO.setup(Motor1B,GPIO.OUT)
   GPIO.setup(Motor1E,GPIO.OUT)
 
+  
+
 
 def loop():
     drawing = True
@@ -72,10 +79,13 @@ def loop():
           xStep = coordX - xOld
           yStep = coordY - yOld
 
+          move = 
+
           if ((abs(xStep) > 5) or (abs(yStep) > 5)): #pixels too far apart, lift up pen and move
             #movePenUp()
               drawX(xStep)
               drawY(yStep)
+              #We are going to have to get an angle
               #movePenDown()
           
           else: #draws
