@@ -9,6 +9,9 @@ import RPi.GPIO as GPIO
 from time import sleep
 import board
 import digitalio as d
+import math
+
+SCALEFACTOR = 2
 
 # Pins for Motor Driver Inputs 
 Motor1A = 22
@@ -39,6 +42,9 @@ yOld = 0
 coordX = 0
 coordY = 0
 
+#global currAngle
+#currAngle = 0
+
 #Function Declarations
 # def movePenUp()
 # def movePenDown()
@@ -54,7 +60,8 @@ def setup():
   GPIO.setup(Motor1E,GPIO.OUT)
 
   
-
+#1. read in cvs coordinates
+#2. 
 
 def loop():
     drawing = True
@@ -79,13 +86,17 @@ def loop():
           xStep = coordX - xOld
           yStep = coordY - yOld
 
-          move = 
+          move(xStep, yStep)
+
 
           if ((abs(xStep) > 5) or (abs(yStep) > 5)): #pixels too far apart, lift up pen and move
             #movePenUp()
               drawX(xStep)
               drawY(yStep)
               #We are going to have to get an angle
+
+              
+
               #movePenDown()
           
           else: #draws
@@ -112,28 +123,48 @@ def movePenDown(): #turn on LED
 
 
 
-#function for drawing x
-def drawX(stepsToMove):
-  steps = 0
-  if (stepsToMove > 0): #to move forwards
-    steps = 1
-  else: #to move backwards
-    stepsToMove *= -1
-    steps = -1
-  for x in range(stepsToMove):
-    #xAxis.step(steps)
-    sleep(10)
+
+def move(xStep, yStep):
+    #diameter = 2.5 inches 
+    #circumference = 7.85 inches
+    #2048 steps
+    #512 in one rotation
+    #4 ticks * SCALEFACTOR in 1 pixel
+    stepsPerRevolution = 512
+    length = math.sqrt(pow(xStep,2) + pow(yStep,2))
+    degrees = math.degrees(math.atan(yStep/xStep)) #degrees between 2 pixels
+
+ 
+    #angletoMove = currAngle + degrees
+    #angleToSteps = angletoMove/360 * stepsPerRevolution
+
+    #get angle
+    if degrees > 0:
+        forwardR(2, angleToSteps)
+        backwardL(2, angleToSteps)
+    elif degrees < 0:
+        backwardR(2, angleToSteps)
+        forwardL(2, angleToSteps)
 
 
-#function for drawing y
-def drawY(stepsToMove):
-  print("drawing y direction")
-  steps = 0
-  if (stepsToMove > 0): #to move forwards
-    steps = 1
-  else: #to move backwards
-    stepsToMove *= -1
-    steps = -1
+
+    #going straight after angling
+    forwardR(2, 4*SCALEFACTOR*length)
+    forwardL(2, 4*SCALEFACTOR*length)
+
+
+    
+
+
+# #function for drawing y
+# def drawY(stepsToMove):
+#   print("drawing y direction")
+#   steps = 0
+#   if (stepsToMove > 0): #to move forwards
+#     steps = 1
+#   else: #to move backwards
+#     stepsToMove *= -1
+#     steps = -1
 
   for x in range(stepsToMove):
     yAxis.step(steps)
@@ -146,25 +177,19 @@ def blockingRead(): #buffers before reading to make sure serial input is fully s
     delay(100)
   }
   return convertSerialInputStringToInt()
-
-
 def convertSerialInputStringToInt(): #convert csv to int#
     with open("random.csv", newline = "") as f:
         csvreader = csv.reader(f, quoting = csv.QUOTE_NONNUMERIC, delimiter = ',') 
         output = []
         for row in csvreader: 
             output.append(row[:])
-
         for rows in outpugt:
             print(rows)
-
-
   #only called when serial is available
   String resultStr
   int resultInt
   String inputString = ""
   char tempChar = Serial.read()
-
   #reads entire input char by char into a string
   while tempChar is not ' ' and tempChar is not '\n' # python inputs coordinates seperated by spaces and new lines
   {
@@ -172,7 +197,6 @@ def convertSerialInputStringToInt(): #convert csv to int#
     tempChar = Serial.read()
     delay(100)
   }
-
   #parses that string into an int
   len = inputString.length()
   for i in len:
@@ -185,7 +209,5 @@ def convertSerialInputStringToInt(): #convert csv to int#
       resultStr += inputString[i]
     }
   resultInt = resultStr.toInt()
-
   return resultInt
-
   """
